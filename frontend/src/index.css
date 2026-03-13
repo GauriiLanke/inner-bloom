@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-bloom-mist text-bloom-ink antialiased;
+  }
+}
+
+@layer components {
+  .bloom-bg {
+    @apply bg-bloom-gradient;
+  }
+
+  .bloom-card {
+    @apply rounded-2xl border border-white/60 bg-white/70 shadow-bloom backdrop-blur;
+  }
+
+  .bloom-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition active:scale-[0.99];
+  }
+
+  .bloom-btn-primary {
+    @apply bloom-btn bg-gradient-to-r from-bloom-purple to-bloom-lavender text-white shadow-bloom hover:brightness-105;
+  }
+
+  .bloom-btn-ghost {
+    @apply bloom-btn bg-white/70 text-bloom-ink hover:bg-white;
+  }
+}
