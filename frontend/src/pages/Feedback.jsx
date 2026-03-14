@@ -10,6 +10,7 @@ import {
   Legend,
 } from 'chart.js'
 import { Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { api } from '../services/api'
 
@@ -20,6 +21,7 @@ export default function Feedback() {
   const [comment, setComment] = useState('')
   const [analytics, setAnalytics] = useState(null)
   const [loading, setLoading] = useState(false)
+  const { t } = useTranslation()
 
   const loadAnalytics = async () => {
     try {
@@ -39,11 +41,11 @@ export default function Feedback() {
     setLoading(true)
     try {
       await api.post('/feedback', { rating, comment })
-      toast.success('Thanks for your feedback!')
+      toast.success(t('feedbackPage.thanks'))
       setComment('')
       await loadAnalytics()
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to submit feedback')
+      toast.error(err?.response?.data?.message || t('feedbackPage.error'))
     } finally {
       setLoading(false)
     }
@@ -71,22 +73,29 @@ export default function Feedback() {
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-2 text-xs font-extrabold text-bloom-ink/70">
             <Sparkles className="h-4 w-4 text-bloom-purple" />
-            Feedback System
+            {t('feedbackPage.badge')}
           </div>
           <div className="mt-3 text-3xl font-black tracking-tight text-bloom-ink">
-            Help Us Improve <span className="text-bloom-purple">Inner Bloom</span>
+            {t('feedbackPage.title').split(' ').slice(0, -2).join(' ')}{' '}
+            <span className="text-bloom-purple">
+              {t('feedbackPage.title').split(' ').slice(-2).join(' ')}
+            </span>
           </div>
           <div className="mt-2 text-sm font-semibold text-bloom-ink/70">
-            Rate recommendations, diet usefulness, and app experience.
+            {t('feedbackPage.subtitle')}
           </div>
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-3">
           <div className="bloom-card p-7 lg:col-span-1 text-left">
-            <div className="text-sm font-extrabold text-bloom-ink">Submit feedback</div>
+            <div className="text-sm font-extrabold text-bloom-ink">
+              {t('feedbackPage.submitTitle')}
+            </div>
             <form onSubmit={submit} className="mt-5 grid gap-4">
               <label className="grid gap-2">
-                <span className="text-xs font-bold text-bloom-ink/70">Rating (1–5)</span>
+                <span className="text-xs font-bold text-bloom-ink/70">
+                  {t('feedbackPage.ratingLabel')}
+                </span>
                 <input
                   type="range"
                   min={1}
@@ -98,43 +107,53 @@ export default function Feedback() {
               </label>
 
               <label className="grid gap-2">
-                <span className="text-xs font-bold text-bloom-ink/70">Comment</span>
+                <span className="text-xs font-bold text-bloom-ink/70">
+                  {t('feedbackPage.commentLabel')}
+                </span>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   rows={5}
                   className="w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-bloom-lavender/40"
-                  placeholder="What did you like? What should we improve?"
+                  placeholder={t('feedbackPage.commentPlaceholder')}
                 />
               </label>
 
               <button disabled={loading} className="bloom-btn-primary w-full">
-                {loading ? 'Sending…' : 'Submit'}
+                {loading ? t('feedbackPage.submitting') : t('feedbackPage.submit')}
               </button>
             </form>
           </div>
 
           <div className="bloom-card p-7 lg:col-span-2">
             <div className="text-left">
-              <div className="text-sm font-extrabold text-bloom-ink">Analytics</div>
+              <div className="text-sm font-extrabold text-bloom-ink">
+                {t('feedbackPage.analyticsTitle')}
+              </div>
               <div className="mt-1 text-sm font-semibold text-bloom-ink/70">
-                Simple dashboard for hackathon demos.
+                {t('feedbackPage.analyticsSubtitle')}
               </div>
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               <div className="rounded-2xl border border-white/70 bg-white/60 p-4 text-left">
-                <div className="text-xs font-extrabold text-bloom-ink/60">Total</div>
+                <div className="text-xs font-extrabold text-bloom-ink/60">
+                  {t('feedbackPage.total')}
+                </div>
                 <div className="mt-1 text-2xl font-black text-bloom-ink">{analytics?.summary?.count ?? 0}</div>
               </div>
               <div className="rounded-2xl border border-white/70 bg-white/60 p-4 text-left">
-                <div className="text-xs font-extrabold text-bloom-ink/60">Average</div>
+                <div className="text-xs font-extrabold text-bloom-ink/60">
+                  {t('feedbackPage.average')}
+                </div>
                 <div className="mt-1 text-2xl font-black text-bloom-ink">
                   {analytics?.summary?.avgRating ? analytics.summary.avgRating.toFixed(2) : '0.00'}
                 </div>
               </div>
               <div className="rounded-2xl border border-white/70 bg-white/60 p-4 text-left">
-                <div className="text-xs font-extrabold text-bloom-ink/60">Top Tags</div>
+                <div className="text-xs font-extrabold text-bloom-ink/60">
+                  {t('feedbackPage.topTags')}
+                </div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {(analytics?.topTags || []).slice(0, 6).map((t) => (
                     <span
@@ -145,7 +164,9 @@ export default function Feedback() {
                     </span>
                   ))}
                   {!analytics?.topTags?.length ? (
-                    <span className="text-xs font-semibold text-bloom-ink/60">—</span>
+                    <span className="text-xs font-semibold text-bloom-ink/60">
+                      {t('feedbackPage.noTags')}
+                    </span>
                   ) : null}
                 </div>
               </div>
@@ -162,7 +183,9 @@ export default function Feedback() {
                   }}
                 />
               ) : (
-                <div className="text-sm font-semibold text-bloom-ink/70">No analytics yet.</div>
+                <div className="text-sm font-semibold text-bloom-ink/70">
+                  {t('feedbackPage.noAnalytics')}
+                </div>
               )}
             </div>
           </div>

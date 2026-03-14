@@ -12,7 +12,8 @@ async function upsertMany(req, res) {
   const items = req.body?.reminders;
   if (!Array.isArray(items)) return res.status(400).json({ message: 'reminders array is required' });
 
-  const allowedTypes = new Set(['Lunch Time', 'Exercise', 'Water Intake', 'Sleep']);
+  // Allow three primary meal reminders plus optional extras.
+  const allowedTypes = new Set(['Breakfast', 'Lunch', 'Dinner', 'Exercise', 'Water Intake', 'Sleep']);
 
   const results = [];
   for (const it of items) {

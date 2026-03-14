@@ -21,10 +21,10 @@ export default function Login() {
     try {
       const res = await api.post('/auth/login', { email, password })
       setSession(res.data?.token, res.data?.user)
-      toast.success('Welcome back!')
+      toast.success(t('auth.login.success'))
       navigate('/assessment')
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Login failed')
+      toast.error(err?.response?.data?.message || t('auth.login.error'))
     } finally {
       setLoading(false)
     }
@@ -34,14 +34,14 @@ export default function Login() {
     <div className="bloom-bg min-h-[calc(100vh-88px)]">
       <div className="mx-auto max-w-md px-4 py-12">
         <div className="bloom-card p-7 text-left">
-          <div className="text-2xl font-black text-bloom-ink">Login</div>
+          <div className="text-2xl font-black text-bloom-ink">{t('auth.login.title')}</div>
           <div className="mt-1 text-sm font-semibold text-bloom-ink/70">
-            Sign in to continue your PCOS wellness journey.
+            {t('auth.login.subtitle')}
           </div>
 
           <form onSubmit={submit} className="mt-6 grid gap-4">
             <div>
-              <label className="text-xs font-bold text-bloom-ink/70">Email</label>
+              <label className="text-xs font-bold text-bloom-ink/70">{t('auth.common.email')}</label>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -52,7 +52,7 @@ export default function Login() {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-bloom-ink/70">Password</label>
+              <label className="text-xs font-bold text-bloom-ink/70">{t('auth.common.password')}</label>
               <input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -64,14 +64,14 @@ export default function Login() {
             </div>
 
             <button disabled={loading} className="bloom-btn-primary w-full">
-              {loading ? 'Signing in…' : t('common.submit')}
+              {loading ? t('auth.login.loading') : t('common.submit')}
             </button>
           </form>
 
           <div className="mt-5 text-sm font-semibold text-bloom-ink/70">
-            New here?{' '}
+            {t('auth.login.noAccount')}{' '}
             <Link to="/register" className="font-extrabold text-bloom-purple">
-              Create an account
+              {t('auth.register.cta')}
             </Link>
           </div>
         </div>

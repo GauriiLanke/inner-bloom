@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 import { api } from '../services/api'
 
-const steps = ['Personal Info', 'Health Details', 'Lifestyle']
+const stepsKey = 'assessment.steps'
 
 function StepPill({ active, label }) {
   return (
@@ -33,6 +34,7 @@ function Field({ label, children }) {
 
 export default function Assessment() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
 
@@ -44,7 +46,12 @@ export default function Assessment() {
     familyHistory: { pcosHistory: 'No' },
   })
 
-  const progress = useMemo(() => Math.round(((step + 1) / steps.length) * 100), [step])
+  const stepsRaw = t(stepsKey, { returnObjects: true })
+  const stepLabels = Array.isArray(stepsRaw)
+    ? stepsRaw
+    : ['Personal Info', 'Health Details', 'Lifestyle']
+  const totalSteps = stepLabels.length
+  const progress = useMemo(() => Math.round(((step + 1) / totalSteps) * 100), [step, totalSteps])
 
   const submit = async () => {
     setLoading(true)
@@ -66,22 +73,25 @@ export default function Assessment() {
       <div className="mx-auto max-w-4xl px-4 py-10">
         <div className="text-center">
           <div className="text-xs font-extrabold tracking-widest text-bloom-ink/50">
-            HEALTH ASSESSMENT
+            {t('assessment.badge')}
           </div>
           <div className="mt-2 text-3xl font-black tracking-tight text-bloom-ink">
-            Take Your <span className="text-bloom-purple">PCOS</span> Risk Assessment
+            {t('assessment.title').split(' ').slice(0, -2).join(' ')}{' '}
+            <span className="text-bloom-purple">
+              {t('assessment.title').split(' ').slice(-2).join(' ')}
+            </span>
           </div>
           <div className="mt-2 text-sm font-semibold text-bloom-ink/70">
-            Answer a few questions and get personalized recommendations.
+            {t('assessment.subtitle')}
           </div>
         </div>
 
         <div className="mt-8 bloom-card p-7">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div className="flex flex-wrap gap-2">
-              {steps.map((s, idx) => (
-                <StepPill key={s} active={idx === step} label={s} />
-              ))}
+              {Array.isArray(stepLabels)
+                ? stepLabels.map((s, idx) => <StepPill key={s} active={idx === step} label={s} />)
+                : null}
             </div>
             <div className="text-xs font-extrabold text-bloom-ink/60">{progress}% complete</div>
           </div>
@@ -101,7 +111,7 @@ export default function Assessment() {
           >
             {step === 0 && (
               <div className="grid gap-4 md:grid-cols-3">
-                <Field label="Full Name">
+                <Field label={t('assessment.fields.fullName')}>
                   <input
                     className="w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-bloom-lavender/40"
                     placeholder="Your name"
@@ -114,7 +124,7 @@ export default function Assessment() {
                     }
                   />
                 </Field>
-                <Field label="Age">
+                <Field label={t('assessment.fields.age')}>
                   <input
                     type="number"
                     min={10}
@@ -130,7 +140,7 @@ export default function Assessment() {
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-4 md:col-span-1 md:grid-cols-2">
-                  <Field label="Height (cm)">
+                  <Field label={t('assessment.fields.height')}>
                     <input
                       type="number"
                       className="w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-bloom-lavender/40"
@@ -143,7 +153,7 @@ export default function Assessment() {
                       }
                     />
                   </Field>
-                  <Field label="Weight (kg)">
+                  <Field label={t('assessment.fields.weight')}>
                     <input
                       type="number"
                       className="w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-bloom-lavender/40"
@@ -162,9 +172,9 @@ export default function Assessment() {
 
             {step === 1 && (
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Menstrual Cycle Regularity">
+                <Field label={t('assessment.fields.cycleRegularity')}>
                   <div className="flex flex-wrap gap-2">
-                    {['Regular', 'Irregular', 'Very irregular', 'Absent'].map((opt) => (
+                    {t('assessment.options.regularity', { returnObjects: true }).map((opt) => (
                       <button
                         type="button"
                         key={opt}
@@ -185,7 +195,7 @@ export default function Assessment() {
                     ))}
                   </div>
                 </Field>
-                <Field label="Cycle Duration (days)">
+                <Field label={t('assessment.fields.cycleDuration')}>
                   <input
                     type="number"
                     min={10}
@@ -201,14 +211,10 @@ export default function Assessment() {
                   />
                 </Field>
 
-                <Field label="Symptoms you experience">
+                <Field label={t('assessment.fields.symptoms')}>
                   <div className="grid grid-cols-2 gap-3">
-                    {[
-                      ['acne', 'Acne'],
-                      ['hairLoss', 'Hair Loss'],
-                      ['weightGain', 'Weight Gain'],
-                      ['fatigue', 'Fatigue'],
-                    ].map(([key, label]) => (
+                    {Object.entries(t('assessment.options.symptoms', { returnObjects: true })).map(
+                      ([key, label]) => (
                       <label
                         key={key}
                         className="flex cursor-pointer items-center gap-2 rounded-2xl border border-white/70 bg-white/60 px-4 py-3 text-sm font-bold text-bloom-ink/80 hover:bg-white"
@@ -229,9 +235,9 @@ export default function Assessment() {
                   </div>
                 </Field>
 
-                <Field label="Family history of PCOS">
+                <Field label={t('assessment.fields.familyHistory')}>
                   <div className="flex gap-2">
-                    {['Yes', 'No', 'Not sure'].map((opt) => (
+                    {t('assessment.options.familyHistory', { returnObjects: true }).map((opt) => (
                       <button
                         type="button"
                         key={opt}
@@ -257,7 +263,7 @@ export default function Assessment() {
 
             {step === 2 && (
               <div className="grid gap-4 md:grid-cols-3">
-                <Field label="Sleep hours/night">
+                <Field label={t('assessment.fields.sleep')}>
                   <input
                     type="number"
                     min={3}
@@ -272,7 +278,7 @@ export default function Assessment() {
                     }
                   />
                 </Field>
-                <Field label="Stress level">
+                <Field label={t('assessment.fields.stress')}>
                   <select
                     value={form.lifestyle.stressLevel}
                     onChange={(e) =>
@@ -283,14 +289,14 @@ export default function Assessment() {
                     }
                     className="w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-bloom-lavender/40"
                   >
-                    {['Low', 'Medium', 'High'].map((opt) => (
+                    {t('assessment.options.stress', { returnObjects: true }).map((opt) => (
                       <option key={opt} value={opt}>
                         {opt}
                       </option>
                     ))}
                   </select>
                 </Field>
-                <Field label="Exercise frequency">
+                <Field label={t('assessment.fields.exercise')}>
                   <select
                     value={form.lifestyle.exerciseFrequency}
                     onChange={(e) =>
@@ -301,7 +307,7 @@ export default function Assessment() {
                     }
                     className="w-full rounded-2xl border border-white/70 bg-white/70 px-4 py-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-bloom-lavender/40"
                   >
-                    {['Never', '1-2x/week', '3-5x/week', 'Daily'].map((opt) => (
+                    {t('assessment.options.exercise', { returnObjects: true }).map((opt) => (
                       <option key={opt} value={opt}>
                         {opt}
                       </option>
@@ -319,21 +325,21 @@ export default function Assessment() {
               disabled={step === 0 || loading}
               className="bloom-btn-ghost disabled:opacity-40"
             >
-              Back
+              {t('assessment.back')}
             </button>
 
-            {step < steps.length - 1 ? (
+            {step < totalSteps - 1 ? (
               <button
                 type="button"
-                onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
+                onClick={() => setStep((s) => Math.min(totalSteps - 1, s + 1))}
                 disabled={loading}
                 className="bloom-btn-primary"
               >
-                Next
+                {t('assessment.next')}
               </button>
             ) : (
               <button type="button" onClick={submit} disabled={loading} className="bloom-btn-primary">
-                {loading ? 'Analyzing…' : 'Submit'}
+                {loading ? t('assessment.loading') : t('assessment.submit')}
               </button>
             )}
           </div>

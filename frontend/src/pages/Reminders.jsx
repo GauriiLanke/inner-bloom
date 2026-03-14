@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { CalendarPlus, BellRing, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { api } from '../services/api'
 
 const defaultReminders = [
-  { type: 'Lunch Time', time: '13:00', enabled: true },
-  { type: 'Exercise', time: '18:00', enabled: true },
-  { type: 'Water Intake', time: '11:00', enabled: true },
-  { type: 'Sleep', time: '22:30', enabled: true },
+  { type: 'Breakfast', time: '08:00', enabled: true },
+  { type: 'Lunch', time: '13:00', enabled: true },
+  { type: 'Dinner', time: '20:00', enabled: true },
 ]
 
 function googleCalendarLink({ title, details, start, end }) {
@@ -37,6 +37,7 @@ function toUtcCompact(date) {
 export default function Reminders() {
   const [items, setItems] = useState(defaultReminders)
   const [loading, setLoading] = useState(false)
+  const { t } = useTranslation()
 
   useEffect(() => {
     async function load() {
@@ -62,7 +63,7 @@ export default function Reminders() {
     setLoading(true)
     try {
       await api.post('/reminders', { reminders: items })
-      toast.success('Reminders saved!')
+      toast.success(t('reminders.save'))
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to save reminders')
     } finally {
@@ -97,13 +98,16 @@ export default function Reminders() {
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-2 text-xs font-extrabold text-bloom-ink/70">
             <Sparkles className="h-4 w-4 text-bloom-purple" />
-            Reminder System
+            {t('reminders.badge')}
           </div>
           <div className="mt-3 text-3xl font-black tracking-tight text-bloom-ink">
-            Set Your <span className="text-bloom-purple">Daily Reminders</span>
+            {t('reminders.title').split(' ').slice(0, -2).join(' ')}{' '}
+            <span className="text-bloom-purple">
+              {t('reminders.title').split(' ').slice(-2).join(' ')}
+            </span>
           </div>
           <div className="mt-2 text-sm font-semibold text-bloom-ink/70">
-            Reminders are stored in your account. If SMTP is configured, emails will be sent.
+            {t('reminders.subtitle')}
           </div>
         </div>
 
@@ -126,7 +130,7 @@ export default function Reminders() {
                         )
                       }
                     />
-                    Enabled
+                    {t('reminders.enabled')}
                   </label>
                 </div>
                 <div className="mt-3 flex items-center gap-3">
@@ -145,7 +149,7 @@ export default function Reminders() {
                     className="bloom-btn-ghost px-4 py-3 text-sm"
                   >
                     <CalendarPlus className="h-4 w-4" />
-                    Add to Calendar
+                    {t('reminders.addToCalendar')}
                   </a>
                 </div>
               </div>
@@ -154,7 +158,7 @@ export default function Reminders() {
 
           <div className="mt-7 flex justify-center">
             <button disabled={loading} onClick={save} className="bloom-btn-primary">
-              {loading ? 'Saving…' : 'Save Reminder Settings'}
+              {loading ? t('reminders.saving') : t('reminders.save')}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 const Assessment = require('../models/Assessment');
+const Reminder = require('../models/Reminder');
 const { scoreAssessment } = require('../services/riskScoringService');
 const { buildRecommendations } = require('../services/recommendationService');
 
@@ -32,6 +33,24 @@ async function submitAssessment(req, res) {
     familyHistory: payload.familyHistory,
     risk,
   });
+
+  // Ensure the user has baseline daily reminders after their first assessment.
+  const existingReminderCount = await Reminder.countDocuments({ userId: req.user.id });
+  if (existingReminderCount === 0) {
+    const defaults = [
+      { type: 'Breakfast', time: '08:00' },
+      { type: 'Lunch', time: '13:00' },
+      { type: 'Dinner', time: '20:00' },
+    ];
+    await Reminder.insertMany(
+      defaults.map((d) => ({
+        userId: req.user.id,
+        type: d.type,
+        time: d.time,
+        enabled: true,
+      })),
+    );
+  }
 
   return res.status(201).json({
     assessmentId: assessment._id,

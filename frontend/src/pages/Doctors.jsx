@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import { LocateFixed, Sparkles, Stethoscope } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 function overpassQuery(lat, lon) {
   // Find doctors/clinics around the user (OpenStreetMap Overpass)
@@ -46,6 +47,7 @@ export default function Doctors() {
   const [pos, setPos] = useState(null)
   const [loading, setLoading] = useState(false)
   const [doctors, setDoctors] = useState([])
+  const { t } = useTranslation()
 
   const center = useMemo(() => pos || { lat: 19.076, lon: 72.8777 }, [pos]) // default: Mumbai
 
@@ -62,7 +64,7 @@ export default function Doctors() {
       setPos(p)
       const list = await fetchDoctors(p.lat, p.lon)
       setDoctors(list)
-      toast.success(`Found ${list.length} nearby places`)
+      toast.success(`${list.length} ${t('doctors.listTitle')}`)
     } catch {
       toast.error('Location not available. Allow location permissions and try again.')
     } finally {
@@ -81,23 +83,26 @@ export default function Doctors() {
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-2 text-xs font-extrabold text-bloom-ink/70">
             <Sparkles className="h-4 w-4 text-bloom-purple" />
-            Nearby Doctor Locator
+            {t('doctors.badge')}
           </div>
           <div className="mt-3 text-3xl font-black tracking-tight text-bloom-ink">
-            Find Nearby <span className="text-bloom-purple">Gynecologists</span>
+            {t('doctors.title').split(' ').slice(0, -1).join(' ')}{' '}
+            <span className="text-bloom-purple">
+              {t('doctors.title').split(' ').slice(-1)[0]}
+            </span>
           </div>
           <div className="mt-2 text-sm font-semibold text-bloom-ink/70">
-            Uses your location + OpenStreetMap data to show clinics/doctors near you.
+            {t('doctors.subtitle')}
           </div>
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-3">
           <div className="bloom-card p-6 lg:col-span-2">
             <div className="mb-4 flex items-center justify-between">
-              <div className="text-sm font-extrabold text-bloom-ink">Map</div>
+              <div className="text-sm font-extrabold text-bloom-ink">{t('doctors.mapTitle')}</div>
               <button disabled={loading} onClick={locate} className="bloom-btn-primary px-4 py-2 text-sm">
                 <LocateFixed className="h-4 w-4" />
-                {loading ? 'Locating…' : 'Use my location'}
+                {loading ? t('doctors.locating') : t('doctors.useMyLocation')}
               </button>
             </div>
 
@@ -131,7 +136,7 @@ export default function Doctors() {
           <div className="bloom-card p-6">
             <div className="flex items-center gap-2 text-sm font-extrabold text-bloom-ink">
               <Stethoscope className="h-5 w-5 text-bloom-purple" />
-              Doctors & Clinics
+              {t('doctors.listTitle')}
             </div>
             <div className="mt-3 max-h-[440px] space-y-3 overflow-auto pr-1">
               {doctors.length ? (
@@ -146,7 +151,7 @@ export default function Doctors() {
                 ))
               ) : (
                 <div className="rounded-2xl border border-white/70 bg-white/60 p-4 text-sm font-semibold text-bloom-ink/70">
-                  No results yet. Try “Use my location”.
+                  {t('doctors.empty')}
                 </div>
               )}
             </div>

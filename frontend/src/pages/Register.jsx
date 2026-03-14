@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
@@ -8,6 +9,7 @@ import { useAuth } from '../context/AuthContext'
 export default function Register() {
   const navigate = useNavigate()
   const { setSession } = useAuth()
+  const { t } = useTranslation()
 
   const [name, setName] = useState('')
   const [age, setAge] = useState(22)
@@ -19,10 +21,11 @@ export default function Register() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await api.post('/auth/register', { name, age, email, password })
-      setSession(res.data?.token, res.data?.user)
-      toast.success('Account created!')
-      navigate('/assessment')
+      await api.post('/auth/register', { name, age, email, password })
+      // Do not auto-login: ask user to login explicitly after registration.
+      setSession('', null)
+      toast.success(t('auth.register.success'))
+      navigate('/login')
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Registration failed')
     } finally {
@@ -34,14 +37,14 @@ export default function Register() {
     <div className="bloom-bg min-h-[calc(100vh-88px)]">
       <div className="mx-auto max-w-md px-4 py-12">
         <div className="bloom-card p-7 text-left">
-          <div className="text-2xl font-black text-bloom-ink">Create account</div>
+          <div className="text-2xl font-black text-bloom-ink">{t('auth.register.title')}</div>
           <div className="mt-1 text-sm font-semibold text-bloom-ink/70">
-            Save your assessment, diet plans, and reminders.
+            {t('auth.register.subtitle')}
           </div>
 
           <form onSubmit={submit} className="mt-6 grid gap-4">
             <div>
-              <label className="text-xs font-bold text-bloom-ink/70">Name</label>
+              <label className="text-xs font-bold text-bloom-ink/70">{t('auth.common.name')}</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -51,7 +54,7 @@ export default function Register() {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-bloom-ink/70">Age</label>
+              <label className="text-xs font-bold text-bloom-ink/70">{t('auth.common.age')}</label>
               <input
                 value={age}
                 onChange={(e) => setAge(Number(e.target.value))}
@@ -63,7 +66,7 @@ export default function Register() {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-bloom-ink/70">Email</label>
+              <label className="text-xs font-bold text-bloom-ink/70">{t('auth.common.email')}</label>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -74,7 +77,7 @@ export default function Register() {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-bloom-ink/70">Password</label>
+              <label className="text-xs font-bold text-bloom-ink/70">{t('auth.common.password')}</label>
               <input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -86,14 +89,14 @@ export default function Register() {
             </div>
 
             <button disabled={loading} className="bloom-btn-primary w-full">
-              {loading ? 'Creating…' : 'Register'}
+              {loading ? t('auth.register.loading') : t('auth.register.cta')}
             </button>
           </form>
 
           <div className="mt-5 text-sm font-semibold text-bloom-ink/70">
-            Already have an account?{' '}
+            {t('auth.register.haveAccount')}{' '}
             <Link to="/login" className="font-extrabold text-bloom-purple">
-              Login
+              {t('auth.common.login')}
             </Link>
           </div>
         </div>
