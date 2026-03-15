@@ -1,6 +1,7 @@
 const DietPlan = require('../models/DietPlan');
 const Assessment = require('../models/Assessment');
-const { generate7DayDietPlan } = require('../services/dietPlanService');
+const { generate7DayDietPlan } = require('../ai/dietGenerator');
+const { generateDietPlanPDF } = require('../services/pdfService');
 
 async function generate(req, res) {
   const { language = 'en' } = req.body || {};
@@ -9,7 +10,18 @@ async function generate(req, res) {
   const latest = await Assessment.findOne({ userId: req.user.id }).sort({ createdAt: -1 });
   if (!latest) return res.status(400).json({ message: 'Complete an assessment first' });
 
-  const plan = generate7DayDietPlan({ riskLevel: latest.risk.riskLevel, language: lang });
+  const params = {
+    riskLevel: latest.risk.riskLevel,
+    language: lang,
+    bmi: (latest.personal?.weightKg / ((latest.personal?.heightCm / 100) ** 2)).toFixed(1),
+    lifestyle: latest.lifestyle,
+    symptoms: latest.symptoms
+  };
+
+  const plan = await generate7DayDietPlan(params);
+  
+  // Generate base64 PDF
+  const pdfBase64 = await generateDietPlanPDF(plan);
 
   const doc = await DietPlan.create({
     userId: req.user.id,
@@ -18,7 +30,7 @@ async function generate(req, res) {
     generatedForRisk: latest.risk.riskLevel,
   });
 
-  return res.status(201).json({ dietPlanId: doc._id, plan });
+  return res.status(201).json({ dietPlanId: doc._id, plan, pdfBase64 });
 }
 
 async function latest(req, res) {

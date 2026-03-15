@@ -140,7 +140,7 @@ export default function ChatbotWidget() {
     setInput('')
     setMessages((m) => [...m, { role: 'user', text: q }])
     // Optimistically show a "thinking" bubble
-    setMessages((m) => [...m, { role: 'assistant', text: '…' }])
+    setMessages((m) => [...m, { role: 'assistant', text: 'TYPING_INDICATOR' }])
 
     try {
       const res = await api.post('/chat', { message: q, language: i18n.language })
@@ -180,16 +180,26 @@ export default function ChatbotWidget() {
 
             <div ref={scrollRef} className="max-h-[360px] space-y-3 overflow-auto px-4 py-4">
               {messages.map((m, idx) => (
-                <div
+                <motion.div
                   key={idx}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
                   className={`w-fit max-w-[85%] rounded-2xl px-4 py-3 text-sm font-semibold ${
                     m.role === 'user'
                       ? 'ml-auto bg-gradient-to-r from-bloom-purple to-bloom-lavender text-white'
-                      : 'bg-white/80 text-bloom-ink'
+                      : 'bg-white/80 text-bloom-ink shadow-sm'
                   }`}
                 >
-                  {m.text}
-                </div>
+                  {m.text === 'TYPING_INDICATOR' ? (
+                    <div className="flex space-x-1.5 py-1">
+                      <motion.div className="h-2 w-2 rounded-full bg-bloom-lavender" animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0 }} />
+                      <motion.div className="h-2 w-2 rounded-full bg-bloom-lavender" animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }} />
+                      <motion.div className="h-2 w-2 rounded-full bg-bloom-lavender" animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }} />
+                    </div>
+                  ) : (
+                    m.text
+                  )}
+                </motion.div>
               ))}
             </div>
 

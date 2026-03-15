@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-import { jsPDF } from 'jspdf'
 import { Download, Sparkles } from 'lucide-react'
 
 import { api } from '../services/api'
@@ -30,54 +29,7 @@ function DayRow({ d }) {
   )
 }
 
-function buildPdf(plan) {
-  const doc = new jsPDF({ unit: 'pt', format: 'a4' })
-  const margin = 42
-  let y = margin
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(16)
-  doc.text('Inner Bloom – Weekly PCOS Diet Plan', margin, y)
-  y += 22
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(11)
-  doc.text(`Language: ${plan.language}   |   Risk: ${plan.riskLevel}`, margin, y)
-  y += 18
-
-  doc.setDrawColor(124, 58, 237)
-  doc.line(margin, y, 595 - margin, y)
-  y += 16
-
-  doc.setFontSize(11)
-  for (const d of plan.days || []) {
-    const title = d.dayLabel || d.day
-    doc.setFont('helvetica', 'bold')
-    doc.text(title, margin, y)
-    y += 14
-    doc.setFont('helvetica', 'normal')
-
-    const lines = [
-      `Breakfast: ${d.breakfast}`,
-      `Lunch: ${d.lunch}`,
-      `Dinner: ${d.dinner}`,
-      d.snacks ? `Snacks: ${d.snacks}` : null,
-    ].filter(Boolean)
-
-    for (const line of lines) {
-      const wrapped = doc.splitTextToSize(line, 595 - margin * 2)
-      doc.text(wrapped, margin, y)
-      y += wrapped.length * 13
-      if (y > 770) {
-        doc.addPage()
-        y = margin
-      }
-    }
-    y += 10
-  }
-
-  return doc
-}
 
 export default function DietPlan() {
   const { language } = useLanguage()
@@ -85,13 +37,16 @@ export default function DietPlan() {
   const [loading, setLoading] = useState(false)
   const [pdfLang, setPdfLang] = useState(language)
 
-  const canDownload = useMemo(() => Boolean(plan?.days?.length), [plan])
+  const [pdfBase64, setPdfBase64] = useState(null)
+
+  const canDownload = useMemo(() => Boolean(pdfBase64), [pdfBase64])
 
   const generate = async () => {
     setLoading(true)
     try {
       const res = await api.post('/diet-plans/generate', { language: pdfLang })
       setPlan(res.data?.plan)
+      setPdfBase64(res.data?.pdfBase64)
       toast.success('Diet plan generated!')
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to generate diet plan')
@@ -101,9 +56,13 @@ export default function DietPlan() {
   }
 
   const download = () => {
-    if (!plan) return
-    const doc = buildPdf(plan)
-    doc.save(`InnerBloom_DietPlan_${plan.language}.pdf`)
+    if (!pdfBase64) return
+    const linkSource = `data:application/pdf;base64,${pdfBase64}`
+    const downloadLink = document.createElement('a')
+    const fileName = `InnerBloom_DietPlan_${plan?.language || 'en'}.pdf`
+    downloadLink.href = linkSource
+    downloadLink.download = fileName
+    downloadLink.click()
   }
 
   return (

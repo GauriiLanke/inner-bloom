@@ -117,7 +117,7 @@ export default function Landing() {
               <img
                 src="/hero-illustration.png"
                 alt=""
-                className="w-full object-contain object-bottom drop-shadow-[0_20px_50px_rgba(124,58,237,0.12)]"
+                className="w-full object-contain object-bottom drop-shadow-[0_20px_50px_rgba(124,58,237,0.12)] animate-floaty"
               />
             </motion.div>
 

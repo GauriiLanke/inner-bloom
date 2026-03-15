@@ -1,6 +1,6 @@
 const Assessment = require('../models/Assessment');
 const Reminder = require('../models/Reminder');
-const { scoreAssessment } = require('../services/riskScoringService');
+const { predictPcosRisk } = require('../ai/modelBridge');
 const { buildRecommendations } = require('../services/recommendationService');
 
 async function submitAssessment(req, res) {
@@ -22,7 +22,19 @@ async function submitAssessment(req, res) {
     return res.status(400).json({ message: 'Missing required assessment fields' });
   }
 
-  const risk = scoreAssessment(payload);
+  let mlResult;
+  try {
+    mlResult = await predictPcosRisk(payload);
+  } catch (error) {
+    console.error('ML Prediction Error:', error);
+    return res.status(500).json({ message: 'Error running ML prediction' });
+  }
+
+  const risk = {
+    riskLevel: mlResult.riskLevel,
+    score: Math.round(mlResult.confidence * 100),
+    explanation: ['Risk assessed via AI Prediction Model'],
+  };
 
   const assessment = await Assessment.create({
     userId: req.user.id,
@@ -83,5 +95,20 @@ async function history(req, res) {
   });
 }
 
-module.exports = { submitAssessment, latestAssessment, history };
+async function predictRisk(req, res) {
+  const payload = req.body || {};
+  
+  try {
+    const mlResult = await predictPcosRisk(payload);
+    return res.json({
+      riskLevel: mlResult.riskLevel,
+      confidence: mlResult.confidence,
+    });
+  } catch (error) {
+    console.error('ML Prediction Error:', error);
+    return res.status(500).json({ message: 'Error running ML prediction' });
+  }
+}
+
+module.exports = { submitAssessment, latestAssessment, history, predictRisk };
 

@@ -8,5 +8,7 @@ router.post('/', requireAuth, assessmentController.submitAssessment);
 router.get('/latest', requireAuth, assessmentController.latestAssessment);
 router.get('/history', requireAuth, assessmentController.history);
 
+router.post('/predict-risk', requireAuth, assessmentController.predictRisk);
+
 module.exports = router;
 

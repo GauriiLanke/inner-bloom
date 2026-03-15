@@ -1,14 +1,9 @@
-const OpenAI = require('openai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// Lazily create OpenAI client so the backend still runs if no key is configured.
-let cachedClient = null;
 function getClient() {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
-  if (!cachedClient) {
-    cachedClient = new OpenAI({ apiKey });
-  }
-  return cachedClient;
+  return new GoogleGenerativeAI(apiKey);
 }
 
 async function chat(req, res) {
@@ -39,17 +34,14 @@ async function chat(req, res) {
   }
 
   try {
-    const completion = await client.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompts[lng] },
-        { role: 'user', content: userMessage },
-      ],
-      temperature: 0.6,
-      max_tokens: 500,
-    });
+    const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    // Construct prompt
+    const prompt = `${systemPrompts[lng]}\n\nUser: ${userMessage}\nAssistant:`;
 
-    const answer = completion.choices?.[0]?.message?.content?.trim() || '';
+    const result = await model.generateContent(prompt);
+    const answer = result.response.text().trim();
+    
     return res.json({ answer });
   } catch (err) {
     console.error('Chat API failed', err);
